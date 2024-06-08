@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .inputContainer {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #barcodeContainer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        .buttonContainer {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <img src="https://picsum.photos/200" alt="Logo" class="logo">
+            <h2 class="title">Barcode Generator</h2>
+            <div class="inputContainer">
+                <input type="text" id="inputText" placeholder="Enter text">
+                <div class="buttonContainer">
+                    <button id="generateButton" onclick="generateBarcode()">Generate Barcode</button>
+                    <button id="clearButton" onclick="clearBarcode()">Clear</button>
+                </div>
+            </div>
+            <div id="barcodeContainer">
+                <svg id="barcode"></svg>
+                <button id="downloadButton" style="display:none" onclick="downloadBarcode()">Download Barcode</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script>
+        function generateBarcode() {
+            var inputText = document.getElementById("inputText").value;
+            var barcodeElement = document.getElementById("barcode");
+            var downloadButton = document.getElementById("downloadButton");
+            downloadButton.style.display = 'block';
+            JsBarcode(barcodeElement, inputText);
+        }
+
+        function clearBarcode() {
+            document.getElementById("inputText").value = ""; // Clear input text
+            var barcodeElement = document.getElementById("barcode");
+            barcodeElement.innerHTML = ""; // Clear barcode
+            document.getElementById("downloadButton").style.display = 'none'; // Hide download button
+        }
+
+        function downloadBarcode() {
+            var inputText = document.getElementById("inputText").value;
+            var barcodeElement = document.getElementById("barcode");
+            JsBarcode(barcodeElement, inputText);
+
+            // Convert SVG to data URL
+            var svg = barcodeElement;
+            var xml = new XMLSerializer().serializeToString(svg);
+            var svgData = "data:image/svg+xml;base64," + btoa(xml);
+
+            // Create a temporary canvas element
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+
+            // Create an image element to load the SVG data
+            var image = new Image();
+            image.onload = function() {
+                // Set canvas dimensions to match image
+                canvas.width = image.width;
+                canvas.height = image.height;
+
+                // Draw the image onto the canvas
+                context.drawImage(image, 0, 0);
+
+                // Convert canvas to PNG data URL
+                var pngData = canvas.toDataURL('image/png');
+
+                // Create a temporary anchor element to trigger download
+                var downloadLink = document.createElement("a");
+                downloadLink.href = pngData;
+                downloadLink.download = "barcode.png"; // Change the filename if needed
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            };
+
+            // Set the image source to the SVG data URL
+            image.src = svgData;
+        }
+    </script>
+</body>
+</html>
